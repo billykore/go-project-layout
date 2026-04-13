@@ -22,3 +22,7 @@
 
 # Goland IDE
 .idea
+
+# Build output binaries
+/main
+*.pid
