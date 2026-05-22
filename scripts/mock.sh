@@ -10,7 +10,7 @@ set -euo pipefail
 # PORTS_DIR: Source directory for interfaces
 # MOCKS_DEST: Destination directory for generated mocks
 PORTS_DIR="internal/core/ports"
-MOCKS_DEST="internal/core/usecase/mocks"
+MOCKS_DEST="internal/core/service/mocks"
 
 # Command to run mockgen.
 # Using 'go run' ensures we use the version pinned in go.mod.

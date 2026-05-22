@@ -119,33 +119,46 @@ External test files, integration testing templates, and mock fixtures.
 - Avoid circular dependencies
 - Write clear documentation for public packages
 
-## Go Modules
-
-Initialize a new module:
-
-```bash
-go mod init github.com/username/projectname
-```
-
 ## Building and Running
 
-```bash
-# Build an application
-go build ./cmd/app1
+You can use the root `Makefile` to trigger standard tasks:
 
-# Run an application
-go run ./cmd/app1
+```bash
+# Build the application binary
+make build
+
+# Run the local server
+make run
+
+# Run all tests
+make test
+
+# Run the linter
+make lint
+```
+
+Or run Go commands directly:
+
+```bash
+# Build the application
+go build ./cmd/main.go
+
+# Run the application
+go run ./cmd/main.go
 
 # Run tests
 go test ./...
-
-# Run with coverage
-go test -cover ./...
 ```
+
+## AI Developer Guidance
+
+For development instructions and architectural constraints tailored for AI coding assistants, see the **[AGENTS.md](file:///Users/billykore/Kore/Golang/go-project-layout/AGENTS.md)** guide.
 
 ## Dependencies
 
-- Go 1.16 or higher recommended
+- Go 1.26 or higher recommended
+- `golangci-lint` (optional, for running lint checks)
+- `mockgen` (optional, for generating mock files)
 
 ## License
 
