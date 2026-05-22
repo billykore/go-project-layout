@@ -4,8 +4,9 @@
 # an unset variable is referenced, or any command in a pipeline fails.
 set -euo pipefail
 
-# Resolve the project root directory
-cd "$(dirname "$0")/.."
+echo "Executing pre-push hook: Running all unit tests..."
 
-echo "Running tests..."
-go test -v -race -count=1 ./...
+# Run all unit tests
+make test
+
+echo "Pre-push checks passed successfully."

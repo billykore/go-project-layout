@@ -6,6 +6,9 @@
 # -o pipefail: exit if any command in a pipe fails
 set -euo pipefail
 
+# Resolve the project root directory
+cd "$(dirname "$0")/.."
+
 # Configuration
 # PORTS_DIR: Source directory for interfaces
 # MOCKS_DEST: Destination directory for generated mocks

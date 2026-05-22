@@ -4,8 +4,10 @@
 # an unset variable is referenced, or any command in a pipeline fails.
 set -euo pipefail
 
-# Resolve the project root directory
-cd "$(dirname "$0")/.."
+echo "Executing pre-commit hook: Running lint and vet checks..."
 
-echo "Running tests..."
-go test -v -race -count=1 ./...
+# Run linting and vet checks
+make lint
+make vet
+
+echo "Pre-commit checks passed successfully."
