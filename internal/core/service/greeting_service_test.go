@@ -3,11 +3,9 @@ package service
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"os"
 	"testing"
 
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/domain"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/domain"
 )
 
 // mockGreetingRepository is a manual mock implementation of GreetingRepository.
@@ -20,8 +18,6 @@ func (m *mockGreetingRepository) GetGreeting(ctx context.Context) (*domain.Greet
 }
 
 func TestGreetingService_GetGreeting(t *testing.T) {
-	log := slog.New(slog.NewJSONHandler(os.Stderr, nil))
-
 	tests := []struct {
 		name    string
 		mock    func(ctx context.Context) (*domain.Greeting, error)
@@ -57,7 +53,7 @@ func TestGreetingService_GetGreeting(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &mockGreetingRepository{getGreetingFunc: tt.mock}
-			svc := NewGreetingService(log, repo)
+			svc := NewGreetingService(repo)
 
 			got, err := svc.GetGreeting(context.Background())
 			if (err != nil) != tt.wantErr {

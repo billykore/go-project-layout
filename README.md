@@ -1,35 +1,152 @@
-# Go DDD Backend Template (Dependency-Free)
+# Go Project Layout
 
-A clean, ready-to-go Go backend template structured around **Domain-Driven Design (DDD)** and **Clean Architecture** principles. This template is designed to be **dependency-free**, utilizing only the Go standard library.
+## Overview
 
-## Tech Stack
-* **Language**: Go 1.25+
-* **Routing & HTTP**: Standard `net/http` package
-* **Logging**: Standard `log/slog` package
-* **Testing**: Standard `testing` package
+This repository demonstrates a standard Go project structure following best practices and conventions used in production Go applications.
 
-## Architecture
-The repository adheres to strict dependency rules flowing inwards:
+## Project Structure
 
-* **Core/Domain (`/internal/app/_your_app_/core/domain`)**: Pure Go business entities and sentinel errors. Zero infrastructure imports.
-* **Core/Ports (`/internal/app/_your_app_/core/ports`)**: Dependency inversion interfaces.
-* **Core/Service (`/internal/app/_your_app_/core/service`)**: Use-cases orchestrating ports and domain logic.
-* **Adapters (`/internal/app/_your_app_/adapters`)**: Infrastructure implementations (HTTP Handlers using standard `net/http` with specific DTOs, and memory repositories).
-* **Shared Infrastructure (`/pkg`)**: Tooling like reusable Loggers using `slog`.
+This project follows a clean directory structure inspired by the standard Go project layout, adapted to implement **Hexagonal Architecture** (also known as **Ports and Adapters**).
 
-## Features
-* **Zero External Dependencies**: Fast builds and minimal maintenance.
-* **Clean Architecture**: Strict separation of concerns (DTO mapping isolated at Handler level).
-* **Domain-Driven Design**: Business logic isolated in the core domain layer.
-* **Graceful Shutdown**: Built-in graceful server shutdown using standard library signals and context.
-* **Preconfigured Makefile**: Simple commands for building (`make build`), running (`make run`), and testing (`make test`).
+```text
+.
+├── Makefile                # Automates development commands
+├── README.md               # Root documentation
+├── api/                    # API specifications (OpenAPI, gRPC proto definitions, etc.)
+├── build/                  # Package build and CI configurations
+│   ├── ci/                 # Continuous integration pipelines
+│   └── package/            # Application packaging (e.g. Dockerfiles)
+├── cmd/                    # Executable entry points
+│   └── main.go             # Application bootstrap & dependency injection
+├── configs/                # Configuration file templates (YAML, JSON, env)
+├── deployments/            # Cloud deployment configurations (Kubernetes, Compose)
+├── githooks/               # Git hook hooks for development checks
+├── go.mod                  # Go module definition
+├── internal/               # Private application code (Hexagonal Architecture)
+│   ├── adapters/           # Driven adapters (external systems implementation)
+│   │   └── repository/     # Data persistence adapters (Memory, DBs, etc.)
+│   ├── api/                # Driving adapters (incoming client interfaces)
+│   │   ├── dto/            # Data Transfer Objects for API payloads
+│   │   └── handler/        # HTTP handlers / controller logic
+│   └── core/               # Clean business domain logic (dependency-free)
+│       ├── domain/         # Core business entities & validations
+│       ├── ports/          # Boundary contracts (driving & driven interfaces)
+│       └── service/        # Use cases implementing driving ports
+├── pkg/                    # Reusable library code safe for external imports
+├── scripts/                # Helper bash scripts invoked by Makefile
+└── test/                   # External integration & end-to-end test suites
+```
 
-## Getting Started
-1. Run `make test` to verify the project's integrity.
-2. Run `make run` to start the server on `:8080`.
-3. Send a GET request to `http://localhost:8080/greeting` to see the example feature in action:
-   ```bash
-   curl http://localhost:8080/greeting
-   ```
+### `/cmd`
 
-For explicit instructions on architectural guidelines and contributing new features, refer to [AI_CONTEXT.md](./AI_CONTEXT.md).
+Contains application entrypoints.
+
+- [cmd/main.go](file:///Users/billykore/Kore/Golang/go-project-layout/cmd/main.go) acts as the **Composition Root**. It initializes the driven repository adapters, passes them to core services, connects services to HTTP handlers, and configures the standard HTTP server. It also implements graceful shutdown handling.
+
+### `/internal`
+
+Contains private application and library code. The Go compiler enforces that code within `/internal` cannot be imported by external packages.
+
+This project organizes `/internal` using **Hexagonal Architecture** to decouple core business rules from external framework dependencies, delivery mechanisms, and databases:
+
+#### 1. Core (`/internal/core`)
+
+The innermost layer of the architecture, completely free of external dependencies (imports are restricted to the Go standard library).
+
+- **`domain/`** ([greeting.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/core/domain/greeting.go)): Contains the domain models/entities and core validations.
+- **`ports/`** ([greeting.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/core/ports/greeting.go)): Defines boundaries via interfaces.
+  - *Driving Ports* (Services): Inward-facing interfaces that expose core business logic to entrypoints.
+  - *Driven Ports* (Repositories): Outward-facing interfaces representing storage, external APIs, etc.
+- **`service/`** ([greeting_service.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/core/service/greeting_service.go)): Implements driving ports, orchestrating application-level use cases.
+
+#### 2. Adapters (`/internal/adapters`)
+
+Infrastructure-specific implementations of the *Driven Ports*.
+
+- **`repository/`** ([memory_greeting_repository.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/adapters/repository/memory_greeting_repository.go)): Implements data persistence and storage interfaces defined in `ports`.
+
+#### 3. API (`/internal/api`)
+
+Entrypoints or *Driving Adapters* that receive requests and translate them to core logic.
+
+- **`handler/`** ([greeting_handler.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/api/handler/greeting_handler.go)): Handles HTTP/gRPC transport, validation, serialization, and maps actions to core services.
+- **`dto/`** ([greeting.go](file:///Users/billykore/Kore/Golang/go-project-layout/internal/api/dto/greeting.go)): Houses request/response Data Transfer Objects.
+
+---
+
+### `/pkg`
+
+Public helper libraries. Other projects can import files under `pkg/` as they represent general-purpose libraries decoupled from the business domain.
+
+---
+
+### `/scripts`
+
+Automation bash scripts that keep the root `Makefile` clean and readable:
+
+- `build.sh`: Builds the executable binaries.
+- `run.sh`: Builds and runs the application.
+- `test.sh`: Executes the unit test suite.
+- `vet.sh`: Runs the `go vet` lint checker.
+- `lint.sh`: Runs static linting checks.
+- `clean.sh`: Cleans up local build outputs.
+- `docs.sh`: Generates swagger or API documentation.
+- `mock.sh`: Automates mock generation for interface testing.
+- `migrate.sh`: Executes database schema migrations.
+- `help.sh`: Generates helper menus.
+
+---
+
+### `/build` and `/deployments`
+
+- **`/build/ci/`**: Workflows for continuous integration engines (like GitHub Actions, GitLab CI).
+- **`/build/package/`**: Dockerfiles and packaging assets.
+- **`/deployments/`**: Kubernetes manifests, docker-compose setups, or Helm charts.
+
+---
+
+### `/test`
+
+External test files, integration testing templates, and mock fixtures.
+
+## Best Practices
+
+- Keep `internal/` for code that should not be exported
+- Use `pkg/` for reusable packages
+- Place main functions in `/cmd`
+- Use meaningful directory names
+- Keep related functionality together
+- Avoid circular dependencies
+- Write clear documentation for public packages
+
+## Go Modules
+
+Initialize a new module:
+
+```bash
+go mod init github.com/username/projectname
+```
+
+## Building and Running
+
+```bash
+# Build an application
+go build ./cmd/app1
+
+# Run an application
+go run ./cmd/app1
+
+# Run tests
+go test ./...
+
+# Run with coverage
+go test -cover ./...
+```
+
+## Dependencies
+
+- Go 1.16 or higher recommended
+
+## License
+
+Add your license information here.

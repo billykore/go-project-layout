@@ -2,30 +2,27 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/adapters/handler"
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/adapters/repository"
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/service"
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/pkg/logger"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/adapters/repository"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/api/handler"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/service"
 )
 
 func main() {
-	// Initialize logger
-	log := logger.New()
-
 	// Initialize driven adapters (infrastructure)
 	repo := repository.NewMemoryGreetingRepository()
 
 	// Initialize core business logic (domain + service)
-	greetingService := service.NewGreetingService(log, repo)
+	greetingService := service.NewGreetingService(repo)
 
 	// Initialize driving adapters (entry points)
-	greetingHandler := handler.NewGreetingHandler(log, greetingService)
+	greetingHandler := handler.NewGreetingHandler(greetingService)
 
 	// Set up standard HTTP ServeMux
 	mux := http.NewServeMux()
@@ -39,9 +36,9 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		log.Info("starting server", "addr", server.Addr)
+		log.Println("starting server", "addr", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error("server failed to start", "error", err)
+			log.Println("server failed to start", "error", err)
 			os.Exit(1)
 		}
 	}()
@@ -51,16 +48,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info("received shutdown signal, shutting down gracefully...")
+	log.Println("received shutdown signal, shutting down gracefully...")
 
 	// Allow 10 seconds for active requests to complete
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Error("server forced to shutdown", "error", err)
-		os.Exit(1)
+		log.Fatal("server forced to shutdown", "error", err)
 	}
 
-	log.Info("server exited gracefully")
+	log.Println("server exited gracefully")
 }

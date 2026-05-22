@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/domain"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/domain"
 )
 
 // GreetingRepository is a driven port for greeting persistence.

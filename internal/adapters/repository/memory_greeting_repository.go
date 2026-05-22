@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/domain"
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/ports"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/domain"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/ports"
 )
 
 type memoryGreetingRepository struct {

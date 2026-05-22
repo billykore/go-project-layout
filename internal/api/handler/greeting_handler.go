@@ -2,22 +2,19 @@ package handler
 
 import (
 	"encoding/json"
-	"log/slog"
 	"net/http"
 
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/adapters/dto"
-	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/app/_your_app_/core/ports"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/api/dto"
+	"github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME/internal/core/ports"
 )
 
 type GreetingHandler struct {
-	log     *slog.Logger
 	service ports.GreetingService
 }
 
 // NewGreetingHandler creates a new instance of GreetingHandler.
-func NewGreetingHandler(log *slog.Logger, service ports.GreetingService) *GreetingHandler {
+func NewGreetingHandler(service ports.GreetingService) *GreetingHandler {
 	return &GreetingHandler{
-		log:     log.With("layer", "handler", "handler", "greeting"),
 		service: service,
 	}
 }
@@ -31,7 +28,6 @@ func (h *GreetingHandler) GetGreeting(w http.ResponseWriter, r *http.Request) {
 
 	greeting, err := h.service.GetGreeting(r.Context())
 	if err != nil {
-		h.log.Error("failed to get greeting", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -42,6 +38,6 @@ func (h *GreetingHandler) GetGreeting(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		h.log.Error("failed to encode response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 }
